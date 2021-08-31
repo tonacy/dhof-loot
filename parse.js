@@ -25,26 +25,33 @@ const fs = require("fs");
     JSON.stringify(rarityIndex)
   );
 
-  // Calculate occurence scores
-  let scores = [];
+  // Calculate occurence of mythics in each bag
+  let mythicCounts = [];
+  let mythicStats = {};
   for (let i = 0; i < loot.length; i++) {
-    let score = 0;
+    let mythic = 0;
     const attributes = loot[i][(i + 1).toString()];
 
     for (const attribute of Object.values(attributes)) {
-      score += rarityIndex[attribute];
+      if (rarityIndex[attribute] == 1) {
+        // only add mythics to score
+        mythic++;
+      }
     }
-    scores.push({ lootId: i + 1, score });
+    
+    mythicCounts.push({ lootId: i + 1, mythic });
+
+    mythicStats[mythic.toString()] = mythicStats[mythic.toString()] ? mythicStats[mythic.toString()] + 1 : 1;
   }
 
   // Sort by score
-  scores = scores.sort((a, b) => a.score - b.score);
+  mythicCounts = mythicCounts.sort((a, b) => b.mythic - a.mythic);
   // Sort by index of score
-  scores = scores.map((loot, i) => ({
-    ...loot,
-    rarest: i + 1,
+  mythicCounts = mythicCounts.map((loot, i) => ({
+    ...loot
   }));
 
   // Print loot rarity
-  await fs.writeFileSync("./output/rare.json", JSON.stringify(scores));
+  await fs.writeFileSync("./output/mostMythical.json", JSON.stringify(mythicCounts));
+  await fs.writeFileSync("./output/mythicalStats.json", JSON.stringify(mythicStats));
 })();
